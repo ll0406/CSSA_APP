@@ -96,9 +96,8 @@ class Login extends Component {
     const { user, isFetching, dispatch, isConnected } = nextProps;
     //If user defined, then try log in with token
     if (user && !isFetching) {
+      this.setState({cookieLogin: true, user: user.username, pass:'*******'});
       if (isConnected) {
-        this.setState({cookieLogin: true, user: user.username, pass:'*******'});
-        console.log("AUTH")
         dispatch(userAuth(user.uid, user.token));
       } else {
         setTimeout(() => {

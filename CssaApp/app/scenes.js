@@ -41,7 +41,7 @@ const scenes = Actions.create(
       title={"登录"}
       type='replace'
       hideNavBar={true}
-      initial
+
       />
     <Scene
       key="register"
@@ -55,7 +55,7 @@ const scenes = Actions.create(
       title={"BUCSSA活动推送"}
       type='replace'
       hideNavBar={true}
-
+      initial
       />
     <Scene
       key="profilePage"
