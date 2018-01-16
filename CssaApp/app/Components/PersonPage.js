@@ -62,7 +62,7 @@ class PersonPage extends Component {
         },
         err => {
           console.log(err);
-          Alert.alert('获取用户信息失败',err)
+          Alert.alert('获取用户信息失败','请稍后再试')
         }
       )
   }
