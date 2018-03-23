@@ -10,12 +10,12 @@ import logger from 'redux-logger';
 const store = createStore(
   appReducer,
   compose(
-    applyMiddleware(thunk, logger),
+    applyMiddleware(thunk , logger),
     autoRehydrate()
   )
 );
 
 persistStore(store, {storage: AsyncStorage})
-//persistStore(store, {storage: AsyncStorage}).purge()
+///persistStore(store, {storage: AsyncStorage}).purge()
 
 export default store;

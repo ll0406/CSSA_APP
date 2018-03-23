@@ -227,6 +227,7 @@ export const replyMessage = (uid, username, plid, message, token) => dispatch =>
     message,
     token
   }
+  console.log(message);
   fetch(`${ENDPOINTS.BASE}${ENDPOINTS.REPLY}`, {
     method: 'POST',
     mode: 'cors',

@@ -1,13 +1,15 @@
 import {FETCH_LOGIN, RECEIVE_LOGIN, LOGIN_ERROR, SERVER_ERROR,
-  INVALIDATE_USER, CLEAR_LOGIN_ERROR, UPDATE_SUCCESS, UPDATE_FAIL, EDIT_BIRTH} from '../constants';
+  INVALIDATE_USER, CLEAR_LOGIN_ERROR, UPDATE_SUCCESS, UPDATE_FAIL, EDIT_BIRTH
+} from '../constants';
 import * as ENDPOINTS from "../endpoints";
-import { apiCall } from './networkActions'
+import { safe } from '../helper';
+import { apiCall, startFetching, endFetching } from './networkActions'
 import { Actions } from 'react-native-router-flux';
 import { Alert } from 'react-native';
 
 export const requestLogin = () => {
   return {
-    type: FETCH_LOGIN,
+    type: RECEIVE_LOGIN,
   }
 }
 
@@ -27,67 +29,66 @@ export const fetchLogin = (user, pass) => dispatch => {
   let formData = new FormData();
   formData.append('useracc', user);
   formData.append('userpw', pass);
-  dispatch(requestLogin());
-  apiCall(
-    method = 'POST',
-    endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.LOGIN}`,
-    success = (json) => {
-      dispatch(receiveLogin(json.datas))
-      Actions.newsPage();
-    },
-    fail = (json) => {
-      dispatch({
-        type: LOGIN_ERROR,
-        error: json.error,
-      })
-    },
-    body = formData,
-    headers = {
-      'Content-Type': 'multipart/form-data',
-      'Accept': 'text/html'
-    },
-  )
+  dispatch(startFetching());
+
+  // apiCall(
+  //   method = 'POST',
+  //   endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.LOGIN}`,
+  //   success = (json) => {
+  //     dispatch(endFetching());
+  //     dispatch(receiveLogin(json.datas))
+  //     Actions.newsPage();
+  //   },
+  //   fail = (json) => {
+  //     dispatch(endFetching());
+  //     Alert.alert('错误',json.error);
+  //   },
+  //   body = formData,
+  //   headers = {
+  //     'Content-Type': 'multipart/form-data',
+  //     'Accept': 'text/html'
+  //   },
+  // );
+
+  safe(() => {
+    apiCall(
+      method = 'POST',
+      endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.LOGIN}`,
+      success = (json) => {
+        dispatch(endFetching());
+        dispatch(receiveLogin(json.datas))
+        Actions.newsPage();
+      },
+      fail = (json) => {
+        dispatch(endFetching());
+        Alert.alert('错误',json.error);
+      },
+      body = formData,
+      headers = {
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'text/html'
+      },
+    );
+  }
+  );
 };
 
 export const userUpdate = (data) => dispatch => {
-  apiCall(
-    method = 'POST',
-    endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_UPDATE}`,
-    success = (json) => {
-      dispatch({
-        type: UPDATE_SUCCESS,
-      })
-    },
-    fail = (json) => {
-      Alert.alert("更新失败", json.error)
-    },
-    body = JSON.stringify(data),
-  )
-
-  // fetch(`${ENDPOINTS.BASE}${ENDPOINTS.USER_UPDATE}`, {
-  //   method: 'POST',
-  //   mode: 'cors',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Accept': 'text/html'
-  //   },
-  //   body: JSON.stringify(data)
-  // })
-  // .then(res => res.text())
-  // .then(
-  //   text => {
-  //     const json = JSON.parse(text);
-  //     dispatch({
-  //       type: UPDATE_SUCCESS,
-  //     })
-  //   },
-  //   err => {
-  //     dispatch({
-  //       type: UPDATE_FAIL,
-  //     })
-  //     console.error(err);
-  //   }
-  // );
+  safe(() => {
+    apiCall(
+      method = 'POST',
+      endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_UPDATE}`,
+      success = (json) => {
+        dispatch({
+          type: UPDATE_SUCCESS,
+        })
+      },
+      fail = (json) => {
+        Alert.alert("更新失败", json.error)
+      },
+      body = JSON.stringify(data),
+    )
+  })
 }
 
 export const avatarUpdate = (base64Data, uid, token) => dispatch => {
@@ -96,113 +97,69 @@ export const avatarUpdate = (base64Data, uid, token) => dispatch => {
     imgBase64: base64Data,
     token: token
   }
-
-
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.AVATAR_UPDATE}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success){
-        dispatch({
-          type: UPDATE_SUCCESS,
-        })
-      } else {
-        dispatch({
-          type: UPDATE_FAIL,
-        })
-      }
-    },
-    err => {
-      dispatch({
-        type: UPDATE_FAIL,
-      })
-      console.log("AVATAR UPDATE ERROR!!!!!!")
-      console.error(err);
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.AVATAR_UPDATE}`,
+        success = (json) => {
+          dispatch({
+            type: UPDATE_SUCCESS,
+          })
+        },
+        fail = (json) => {
+          Alert.alert("更新失败", json.error)
+        },
+        body = JSON.stringify(data),
+      )
     }
-  );
+  )
 }
 
 
 export const userAuth = (uid, token) => dispatch => {
   dispatch(requestLogin());
-  apiCall(
-    method = 'GET',
-    endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`,
-    success = (json) => {
-      dispatch(receiveLogin(json.datas));
-      dispatch(clearLoginError());
-      Actions.newsPage();
-    },
-    fail = (json) => {
-      dispatch(invalidateUser);
-      dispatch({
-        type: LOGIN_ERROR,
-        error: json.error,
-      })
-    }
-  )
-
-  // fetch(`${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`)
-  //   .then(res => res.text())
-  //   .then(
-  //     text => {
-  //       const json = JSON.parse(text);
-  //       if (json.success){
-  //         dispatch(receiveLogin(json.datas));
-  //         dispatch(clearLoginError());
-  //         Actions.newsPage();
-  //       } else {
-  //         dispatch(invalidateUser);
-  //         dispatch({
-  //           type: LOGIN_ERROR,
-  //           error: json.error,
-  //         })
-  //       }
-  //     },
-  //     err => {
-  //       dispatch(invalidateUser);
-  //       dispatch({
-  //         type: SERVER_ERROR,
-  //       })
-  //       Alert.alert(err);
-  //     }
-  //   )
-}
-
-export const getMyInfo = (uid, token) => dispatch => {
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`)
-    .then(res => res.text())
-    .then(
-      text => {
-        const json = JSON.parse(text);
-        if (json.success){
+  safe(
+    () => {
+      apiCall(
+        method = 'GET',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`,
+        success = (json) => {
           dispatch(receiveLogin(json.datas));
           dispatch(clearLoginError());
-        } else {
+          Actions.newsPage();
+        },
+        fail = (json) => {
           dispatch(invalidateUser);
           dispatch({
             type: LOGIN_ERROR,
             error: json.error,
           })
         }
-      },
-      err => {
-        dispatch(invalidateUser);
-        dispatch({
-          type: SERVER_ERROR,
-        })
-        console.error(err);
-      }
-    )
+      )
+    }
+  )
+}
+
+export const getMyInfo = (uid, token) => dispatch => {
+  safe(
+    () => {
+      apiCall(
+        method = 'GET',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`,
+        success = (json) => {
+          dispatch(receiveLogin(json.datas));
+          dispatch(clearLoginError());
+        },
+        fail = (json) => {
+          dispatch(invalidateUser);
+          dispatch({
+            type: LOGIN_ERROR,
+            error: json.error,
+          })
+        }
+      )
+    })
 }
 
 export const infoUpdate = (type, uid, key, value, token) => dispatch => {
@@ -229,38 +186,27 @@ export const infoUpdate = (type, uid, key, value, token) => dispatch => {
     endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.EDIT_INFOINT}`
   }
 
-  fetch(endpoint, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success){
-        dispatch({
-          type: UPDATE_SUCCESS,
-        })
-        dispatch(getMyInfo(uid, token))
-        setTimeout(() => {
-          Actions.pop();
-        }, 1000)
-      } else {
-        dispatch({
-          type: UPDATE_FAIL,
-        })
-      }
-    },
-    err => {
-      console.log("INFO UPDATE ERROR!!!!!!")
-      console.error(err);
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = endpoint,
+        success = (json) => {
+          dispatch({
+            type: UPDATE_SUCCESS,
+          })
+          dispatch(getMyInfo(uid, token))
+          setTimeout(() => {
+            Actions.pop();
+          }, 1000)
+        },
+        fail = (json) => {
+          Alert.alert("更新失败", json.error)
+        },
+        body = JSON.stringify(data),
+      )
     }
-  );
+  )
 }
 
 export const pwdChange = (uid, oldpw, newpw, token) => {
@@ -270,33 +216,24 @@ export const pwdChange = (uid, oldpw, newpw, token) => {
     newpw,
     token
   }
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.EDIT_PWD}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success){
 
-        setTimeout(() => {
-          Actions.pop();
-        }, 1000)
-      } else {
-        Alert.alert('更改密码失败', json.error);
-      }
-    },
-    err => {
-      console.log("Fail to change pwd")
-      console.log(json)
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.EDIT_PWD}`,
+        success = (json) => {
+            setTimeout(() => {
+              Actions.pop();
+            }, 1000)
+        },
+        fail = (json) => {
+          Alert.alert('更改密码失败', json.error);
+        },
+        body = JSON.stringify(data),
+      )
     }
-  );
+  )
 }
 
 export const register = (username, password, email) => {
@@ -305,34 +242,23 @@ export const register = (username, password, email) => {
     password,
     email
   }
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.REGISTER}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success){
-        console.log("Register scuess")
-        setTimeout(() => {
-          Actions.pop();
-        }, 150)
-      } else {
-        Alert.alert('注册失败', json.error);
-      }
-    },
-    err => {
-      console.log("Fail to change pwd")
-      console.log(json)
-      Alert.alert('服务器出错了!', '请稍后再试');
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.REGISTER}`,
+        success = (json) => {
+            setTimeout(() => {
+              Actions.pop();
+            }, 150)
+        },
+        fail = (json) => {
+          Alert.alert('注册失败', json.error);
+        },
+        body = JSON.stringify(data),
+      )
     }
-  );
+  )
 }
 
 

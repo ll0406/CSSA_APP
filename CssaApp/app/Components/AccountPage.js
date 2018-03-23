@@ -44,7 +44,6 @@ class AccountPage extends Component {
   constructor(props) {
       super(props);
       const {defaultBirthday, user} = this.props
-
   }
 
   handleLogout = () => {
@@ -196,9 +195,6 @@ class AccountPage extends Component {
             dispatch(invalidateUser());
             })}
         </View>
-
-
-
 
         <Footer
           current={Actions.currentScene}

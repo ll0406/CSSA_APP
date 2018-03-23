@@ -9,6 +9,9 @@ import * as ENDPOINTS from "../endpoints";
 //Will implement page size and page index later
 export const fetchThreadCollection = (uid, token) => dispatch => {
   dispatch({ type: REQUEST_COLLECTION });
+
+
+
   fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_THREAD_COLLECTION}?uid=${uid}&token=${token}&pageSize=1000`)
   .then(res => res.text())
   .then(

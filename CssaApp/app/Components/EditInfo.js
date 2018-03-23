@@ -7,12 +7,14 @@ import {
   Text,
   Dimensions,
   FlatList,
+  Alert
 } from 'react-native';
 
 import ImagePicker from 'react-native-image-crop-picker';
 import { Actions } from 'react-native-router-flux';
 import { connect } from 'react-redux';
 import { Col, Row, Grid } from 'react-native-easy-grid';
+import StatusBarAlert from 'react-native-statusbar-alert';
 
 
 import Footer from './Footer';
@@ -116,10 +118,17 @@ class EditInfo extends Component {
       console.log(image);
       const { user, dispatch } = this.props;
       const data = `data:${image.mime};base64,${image.data}`;
-      dispatch(avatarUpdate(data, user.uid, user.token));
-      setTimeout(() => {
-        this.forceUpdate();
-      }, 2000)
+
+      if (isConnected) {
+        dispatch(avatarUpdate(data, user.uid, user.token));
+        setTimeout(() => {
+          this.forceUpdate();
+        }, 2000)
+      } else {
+        setTimeout(() => {
+          Alert.alert("网络异常", "头像更新失败, 请检查网络连接")
+        }, 1000)
+      }
     }).catch((err) => {
       console.log(err);
     }
@@ -180,6 +189,13 @@ class EditInfo extends Component {
 
     return (
       <View style={{flex: 1, backgroundColor: 'white'}}>
+        <StatusBarAlert
+            visible={!this.props.isConnected}
+            message="网络异常... 请检查网络"
+            backgroundColor="firebrick"
+            color="white"
+            style={styles.alert}
+        />
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.buttonContainer}
@@ -285,6 +301,9 @@ const styles = StyleSheet.create({
   backButton: {
     height: windowHeight * (41/1334),
     width: windowHeight * (41/1334),
+  },
+  alert: {
+    
   }
 });
 

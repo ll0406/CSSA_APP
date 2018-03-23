@@ -27,8 +27,8 @@ const windowHeight = Dimensions.get('window').height;
 
 const mapStateToProps = (state) => ({
       user: state.userReducer.userData,
-      isFetching: state.userReducer.isFetching,
-      isConnected: state.networkReducer.isConnected,
+      isFetching: state.networkReducer.isFetching,
+      errors: state.userReducer.errors
     })
 
 class Login extends Component {
@@ -44,13 +44,16 @@ class Login extends Component {
   }
 
   componentDidMount() {
-     NetInfo.isConnected.addEventListener('connectionChange', this._handleConnectionChange);
+    NetInfo.getConnectionInfo().then((connectionInfo) => {
+      console.log('Initial, type: ' + connectionInfo.type + ', effectiveType: ' + connectionInfo.effectiveType);
+    });
+
+    NetInfo.isConnected.fetch().then(
+      isConnected => {
+        console.log(isConnected);
+      }
+    )
   }
-
-
-  _handleConnectionChange = (isConnected) => {
-    this.props.dispatch(connectionState({ status: isConnected }));
-  };
 
   userInput = () => {
     return (
@@ -93,25 +96,24 @@ class Login extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    const { user, isFetching, dispatch, isConnected } = nextProps;
+    const { user, isFetching, dispatch, errors } = nextProps;
+
     //If user defined, then try log in with token
     if (user && !isFetching) {
       this.setState({cookieLogin: true, user: user.username, pass:'*******'});
-      if (isConnected) {
-        dispatch(userAuth(user.uid, user.token));
-      } else {
-        setTimeout(() => {
-          if (!this.props.isConnected) {
-            Alert.alert('网络异常','请检查网络连接');
-          }
-        }, 2500)
+      if (errors.length === 0) {
+        setTimeout(
+          () => dispatch(userAuth(user.uid, user.token)),
+          2000
+        )
+
       }
     }
   }
 
   handleLogin = () => {
     const { user, pass } = this.state;
-    const { dispatch, isConnected } = this.props;
+    const { dispatch } = this.props;
 
     if (user === "" || pass === "") {
       this.setState({
@@ -123,15 +125,7 @@ class Login extends Component {
       this.setState({
         missingField: false,
       })
-      if (isConnected) {
-        dispatch(fetchLogin(user, pass));
-      } else {
-        setTimeout(() => {
-          if (!isConnected) {
-            Alert.alert('网络异常','请检查网络连接');
-          }
-        }, 1500)
-      }
+      dispatch(fetchLogin(user, pass));
     }
   }
 

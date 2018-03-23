@@ -14,6 +14,7 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { Col, Row, Grid } from 'react-native-easy-grid';
 import { connect } from 'react-redux';
+import StatusBarAlert from 'react-native-statusbar-alert';
 
 import {
   infoUpdate
@@ -24,6 +25,7 @@ const windowHeight = Dimensions.get('window').height;
 
 const mapStateToProps = (state) => ({
   user: state.userReducer.userData,
+  isConnected: state.networkReducer.isConnected,
 })
 
 class EditInfoDetail extends Component {
@@ -40,6 +42,13 @@ class EditInfoDetail extends Component {
 
     return (
       <View style={{flex: 1, backgroundColor: 'white'}}>
+        <StatusBarAlert
+            visible={!this.props.isConnected}
+            message="网络异常... 请检查网络"
+            backgroundColor="firebrick"
+            color="white"
+            style={styles.alert}
+        />
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.buttonContainer}
@@ -59,15 +68,18 @@ class EditInfoDetail extends Component {
           <TouchableOpacity
             style={styles.topRightTextContainer}
             onPress={() => {
-              let finalInfo = this.state.info;
-              let finalAttribute = attribute;
-              if (attribute === 'dateOfBirth') {
-                finalInfo = [finalInfo.getFullYear(), finalInfo.getMonth()+1, finalInfo.getDate()]
-                finalAttribute = 'dateOfBirth';
-              } else if (attribute === 'major') {
-                finalAttribute = 'field2';
+
+              if (isConnected) {
+                let finalInfo = this.state.info;
+                let finalAttribute = attribute;
+                if (attribute === 'dateOfBirth') {
+                  finalInfo = [finalInfo.getFullYear(), finalInfo.getMonth()+1, finalInfo.getDate()]
+                  finalAttribute = 'dateOfBirth';
+                } else if (attribute === 'major') {
+                  finalAttribute = 'field2';
+                }
+                dispatch(infoUpdate(dataType, user.uid, finalAttribute, finalInfo, user.token))}
               }
-              dispatch(infoUpdate(dataType, user.uid, finalAttribute, finalInfo, user.token))}
             }
           >
             <Text

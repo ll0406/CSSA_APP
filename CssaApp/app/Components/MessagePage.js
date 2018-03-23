@@ -57,7 +57,6 @@ class MessagePage extends Component {
   //Socket needed functions
   onReceivedMessage = (message) => {
     this.storeMessage(message);
-    console.log("Received this: ", message);
   }
 
   uuidv4 = () => {
@@ -99,12 +98,14 @@ class MessagePage extends Component {
     this.socket.emit("leave room", this.state.roomId);
     this.socket.emit("close");
     const { user, dispatch, plid, pmType, pmNum } = this.props;
+
     dispatch(setMessageRead(user.uid, [plid], [pmType], user.token));
     dispatch(fetchMessageList(user.uid, user.token));
     this.setState({
       messages: [],
     });
     dispatch({type: CLEAR_MESSAGES});
+
   }
 
   componentWillReceiveProps(nextProps) {
@@ -132,6 +133,7 @@ class MessagePage extends Component {
     dispatch(
       replyMessage(user.uid, user.username, plid, newMessage[0].text, user.token)
     );
+
     //Emit message to the specific room
     //Need to include the room information in the message,
     //Then the server will redirect to specific room when unpacking
@@ -150,7 +152,6 @@ class MessagePage extends Component {
   }
 
   _renderTime = (props) => {
-    console.log(typeof(props.currentMessage.createdAt));
     let time = props.currentMessage.createdAt;
     if (typeof(props.currentMessage.createdAt) == 'string') {
       time = new Date(props.currentMessage.createdAt)

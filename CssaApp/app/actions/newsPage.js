@@ -3,7 +3,9 @@ import {REQUEST_NEWS, SET_NEWSOFFSET,
   CLEAN_LIST,
 } from '../constants';
 import * as ENDPOINTS from '../endpoints';
-import { apiCall } from './networkActions'
+import { apiCall } from './networkActions';
+import { safe } from '../helper';
+import { Alert } from 'react-native';
 
 
 export const setNewsOffset = (offset) => ({
@@ -35,30 +37,41 @@ export const requestNews = () => {
 
 export const fetchNews = (current_page_index = 0, uid) => dispatch => {
   dispatch(requestNews());
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_OFFICIAL_THREAD}?uid=${uid}&pageIndex=${current_page_index+1}&pageSize=10`)
-  .then(res => res.json())
-  .then(
-    json => {
-      console.log("RES is ==> ", json)
-      dispatch(receiveNews(json));
-    },
-    err => console.error(err)
-  );
+  safe(
+    () => {
+      apiCall(
+        method = 'GET',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.GET_OFFICIAL_THREAD}?uid=${uid}&pageIndex=${current_page_index+1}&pageSize=10`,
+        success = (json) => {
+          dispatch(receiveNews(json));
+        },
+        fail = (json) => {
+          Alert.alert('获取失败', json.error)
+        }
+      )
+    }
+  )
 };
 
 export const refreshNews = (uid) => dispatch => {
   dispatch(requestNews());
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_OFFICIAL_THREAD}?uid=${uid}&pageIndex=1&pageSize=10`)
-  .then(res => res.json())
-  .then(
-    json => {
-      dispatch(
-        {
-          type: CLEAN_LIST,
+  safe(
+    () => {
+      apiCall(
+        method = 'GET',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.GET_OFFICIAL_THREAD}?uid=${uid}&pageIndex=1&pageSize=10`,
+        success = (json) => {
+          dispatch(
+            {
+              type: CLEAN_LIST,
+            }
+          );
+          dispatch(receiveNews(json));
+        },
+        fail = (json) => {
+          Alert.alert('更新失败', json.error)
         }
-      );
-      dispatch(receiveNews(json));
-    },
-    err => console.error(err)
-  );
+      )
+    }
+  )
 };

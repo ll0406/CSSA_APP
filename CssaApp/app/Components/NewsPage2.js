@@ -45,7 +45,6 @@ const mapStateToProps = (state) => ({
   user: state.userReducer.userData,
   collectionList: state.collectionReducer.collectionList,
   tidList: state.collectionReducer.tidList,
-  isConnected: state.networkReducer.isConnected,
 })
 
 const windowWidth = Dimensions.get('window').width;
@@ -65,27 +64,23 @@ class NewsPage extends Component {
   }
 
   addToCollection = (tid, subject, author, dateline) => {
-    const { dispatch, user, isConnected } = this.props;
-    if (isConnected) {
-      dispatch(
-        requestAddThread(user.uid, tid, subject, author, dateline, user.token)
-      );
-    }
+    const { dispatch, user } = this.props;
+    dispatch(
+      requestAddThread(user.uid, tid, subject, author, dateline, user.token)
+    )
   }
 
   deleteFromCollection = (tid, subject, author, dateline) => {
-    const { dispatch, user, isConnected } = this.props;
-    if (isConnected) {
-      dispatch(
-        requestDeleteThread(user.uid, tid, subject, author, dateline, user.token)
-      );
-    }
+    const { dispatch, user } = this.props;
+    dispatch(
+      requestDeleteThread(user.uid, tid, subject, author, dateline, user.token)
+    );
   }
 
 
   setCurrentReadOffset = (event) => {
     const yCoord = (event.nativeEvent.contentOffset.y);
-    if (yCoord < -(windowHeight * (170/1334)) && this.props.isConnected) {
+    if (yCoord < -(windowHeight * (170/1334))) {
       this.setState({
         readyToRefresh: true
       })
@@ -93,17 +88,17 @@ class NewsPage extends Component {
   }
 
   componentDidMount() {
-    const { dispatch, user, collectionList, isConnected } = this.props;
+    const { dispatch, user, collectionList } = this.props;
     const { listLength } = this.state;
 
     //Fetch news
-    if (listLength === 0 && isConnected){
+    if (listLength === 0){
       dispatch(
         fetchNews(current_page_index = this.props.newsList.length / 10, user.uid)
       );
     }
 
-    if (user !== undefined && isConnected) {
+    if (user !== undefined) {
       dispatch(fetchThreadCollection(user.uid, user.token));
     }
 
@@ -122,27 +117,24 @@ class NewsPage extends Component {
   }
 
   handleListEndReach = () => {
-    const { dispatch, isFetching, isConnected} = this.props;
+    const { dispatch, isFetching } = this.props;
 
-    if (!isFetching && isConnected) {
+    if (!isFetching) {
       dispatch(fetchNews(current_page_index = this.props.newsList.length / 10));
     }
   }
 
   handleRelease = (event) => {
     if (this.state.readyToRefresh) {
-      const { dispatch, user, isConnected } = this.props;
+      const { dispatch, user } = this.props;
       this.refs.NewsList.scrollToOffset({offset: -(windowHeight * (170/1334))});
-
-      if (isConnected) {
-        this.setState({ refreshing: true }, () => {
-          dispatch(refreshNews(user.uid))
-        })
-        setTimeout(() => {
-          this.refs.NewsList.scrollToOffset({offset: 0});
-          this.setState({ refreshing: false })
-        }, 3000)
-      }
+      this.setState({ refreshing: true }, () => {
+        dispatch(refreshNews(user.uid))
+      })
+      setTimeout(() => {
+        this.refs.NewsList.scrollToOffset({offset: 0});
+        this.setState({ refreshing: false })
+      }, 3000)
     }
     return this.setState({ readyToRefresh: false });
   }
@@ -255,13 +247,6 @@ class NewsPage extends Component {
 
     return (
       <View style={styles.scrollview}>
-        <StatusBarAlert
-            visible={!this.props.isConnected}
-            message="网络异常... 请检查网络"
-            backgroundColor="firebrick"
-            color="white"
-            style={styles.alert}
-        />
         <View
           style={styles.topBar}
         >
