@@ -40,7 +40,7 @@ class EditInfo extends Component {
     return new Date(parts[0], parts[1]-1, parts[2]);
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderSeparator = () => {
     return (
@@ -118,17 +118,10 @@ class EditInfo extends Component {
       console.log(image);
       const { user, dispatch } = this.props;
       const data = `data:${image.mime};base64,${image.data}`;
-
-      if (isConnected) {
         dispatch(avatarUpdate(data, user.uid, user.token));
         setTimeout(() => {
           this.forceUpdate();
         }, 2000)
-      } else {
-        setTimeout(() => {
-          Alert.alert("网络异常", "头像更新失败, 请检查网络连接")
-        }, 1000)
-      }
     }).catch((err) => {
       console.log(err);
     }
@@ -189,13 +182,6 @@ class EditInfo extends Component {
 
     return (
       <View style={{flex: 1, backgroundColor: 'white'}}>
-        <StatusBarAlert
-            visible={!this.props.isConnected}
-            message="网络异常... 请检查网络"
-            backgroundColor="firebrick"
-            color="white"
-            style={styles.alert}
-        />
         <View style={styles.topBar}>
           <TouchableOpacity
             style={styles.buttonContainer}
@@ -303,7 +289,7 @@ const styles = StyleSheet.create({
     width: windowHeight * (41/1334),
   },
   alert: {
-    
+
   }
 });
 

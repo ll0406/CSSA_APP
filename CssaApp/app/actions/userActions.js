@@ -42,7 +42,7 @@ export const fetchLogin = (user, pass) => dispatch => {
 
         setTimeout(() => {
           Actions.newsPage();
-        }, 2000)
+        }, 500)
       },
       fail = (json) => {
         dispatch(endFetching());
@@ -184,7 +184,7 @@ export const infoUpdate = (type, uid, key, value, token) => dispatch => {
           dispatch(getMyInfo(uid, token))
           setTimeout(() => {
             Actions.pop();
-          }, 1000)
+          }, 500)
         },
         fail = (json) => {
           Alert.alert("更新失败", json.error)
@@ -211,7 +211,7 @@ export const pwdChange = (uid, oldpw, newpw, token) => {
         success = (json) => {
             setTimeout(() => {
               Actions.pop();
-            }, 1000)
+            }, 500)
         },
         fail = (json) => {
           Alert.alert('更改密码失败', json.error);

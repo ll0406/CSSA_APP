@@ -8,7 +8,6 @@ import {
   Dimensions,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
-import StatusBarAlert from 'react-native-statusbar-alert';
 import {INVALIDATE_USER, DISMISS_ALERT} from '../constants';
 
 import {Actions} from 'react-native-router-flux';
@@ -37,7 +36,6 @@ const mapStateToProps = (state) => ({
   photoUri: state.reducer.photoUri,
   user: state.userReducer.userData,
   changeDetected: state.userReducer.changeDetected,
-  isConnected: state.networkReducer.isConnected,
 })
 
 class AccountPage extends Component {
@@ -106,13 +104,6 @@ class AccountPage extends Component {
 
     return (
       <View style={styles.pageView}>
-        <StatusBarAlert
-            visible={!this.props.isConnected}
-            message="网络异常... 请检查网络"
-            backgroundColor="firebrick"
-            color="white"
-            style={styles.alert}
-        />
         <View style={styles.topView}>
           <Svg
              height={Dimensions.get('window').height * (220/1334)}

@@ -16,9 +16,11 @@ import { connect } from 'react-redux';
 import {Col, Row, Grid} from 'react-native-easy-grid';
 import Swipeout from 'react-native-swipeout';
 import Swiper from 'react-native-swiper';
+import { TabViewAnimated, TabBar, SceneMap, TabViewPagerPan } from 'react-native-tab-view';
 import { Badge } from 'react-native-elements';
 
 import Footer from './Footer';
+import FadeIn from '../helpers/FadeIn';
 import { CLEAR_MESSAGES } from '../constants';
 import { fetchMessageList, requestDeleteMessage, setRead } from '../actions/messageActions';
 
@@ -32,9 +34,23 @@ const mapStateToProps = (state) => ({
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+
+const initialLayout = {
+  height: 0,
+  width: windowWidth,
+}
+
 class Inbox extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      index: 0,
+      routes: [
+        { key: 'first', title: '个人消息'},
+        { key: 'second', title: '系统消息'}
+      ]
+    }
   }
 
   componentDidMount() {
@@ -200,7 +216,7 @@ class Inbox extends Component {
     )
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderSeparator = () => {
     return (
@@ -213,8 +229,69 @@ class Inbox extends Component {
       <View style={{width: windowWidth * (61/75), height: 20}} />
     );
   }
+
+   renderMyMessage = () => {
+     const { messageList } = this.props;
+      return (
+        <View>
+          <View style={styles.listView}>
+            <FlatList
+              data={messageList}
+              renderItem={this._renderItem}
+              keyExtractor={this._keyExtractor}
+              showsVerticalScrollIndicator={false}
+              ItemSeparatorComponent={this._renderSeparator}
+              ListFooterComponent={this._renderSeparator}
+              ListHeaderComponent={this._renderHeader}
+              />
+          </View>
+        </View>
+      )
+  }
+
+  renderSysMessage = () => {
+    const { sysMessage } = this.props;
+    return (
+      <View>
+        <View style={styles.listView}>
+          <FlatList
+            contentContainerStyle={{ flexGrow: 1}}
+            data={sysMessage}
+            renderItem={this._renderSystemMessages}
+            keyExtractor={this._keyExtractor}
+            showsVerticalScrollIndicator={false}
+            ItemSeparatorComponent={this._renderSeparator}
+            ListFooterComponent={this._renderSeparator}
+            ListHeaderComponent={this._renderHeader}
+            />
+        </View>
+
+      </View>
+    )
+  }
+
+  _handleIndexChange = index => this.setState({ index });
+
+  _renderTabHeader = props => {
+    return (
+      <TabBar {...props}
+          style={{
+            backgroundColor: '#B02025',
+          }}
+        />
+    )
+  }
+
+  _renderScene = SceneMap({
+    first: this.renderMyMessage,
+    second: this.renderSysMessage,
+  });
+
+  renderPager = (props: any) => <TabViewPagerPan {...props} />;
+
+
   render() {
-    const { user, messageList, sysMessage, isFetchingList, dispatch} = this.props;
+    const { user, isFetchingList, dispatch} = this.props;
     let uid, token;
     if (user !== undefined) {
       uid = user.uid;
@@ -222,75 +299,40 @@ class Inbox extends Component {
     }
       return(
         <View style={{flex: 1, backgroundColor: 'white'}}>
-          <Swiper
-            width={windowWidth}
-            height={windowHeight}
-            loop={true}
-            showsPagination={false}
-          >
-            <View>
-              <View style={styles.topBar}>
-                <TouchableOpacity
-                  style={styles.addButtonContainer}
-                  onPress={() => Actions.createMessage()}
-                  >
-                  <Image
-                    source={require('../img/addMessage.png')}
-                    style={styles.addButton}
-                  />
-                </TouchableOpacity>
+        <View style={styles.topBar}>
+          {
+            this.state.index === 0 &&
+            <TouchableOpacity
+              style={styles.addButtonContainer}
+              onPress={() => Actions.createMessage()}
+              >
+              <Image
+                source={require('../img/addMessage.png')}
+                style={styles.addButton}
+              />
+            </TouchableOpacity>
+          }
+          <Text
+            style={styles.headerText}
+            >
+              消息
+          </Text>
+        </View>
 
-                <Text
-                  style={styles.headerText}
-                  >
-                    消息
-                </Text>
-              </View>
-
-              <View style={styles.listView}>
-                <FlatList
-                  data={messageList}
-                  renderItem={this._renderItem}
-                  keyExtractor={this._keyExtractor}
-                  showsVerticalScrollIndicator={false}
-                  ItemSeparatorComponent={this._renderSeparator}
-                  ListFooterComponent={this._renderSeparator}
-                  ListHeaderComponent={this._renderHeader}
-                  />
-              </View>
-
-              <View style={styles.backgroundImageView}>
-                <Image
-                  style={styles.backgroundImage}
-                  source={require('../img/iconBackground.png')}
-                />
-              </View>
-
-            </View>
-
-            <View>
-              <View style={styles.topBar}>
-                <Text
-                  style={styles.headerText}
-                  >
-                    系统消息
-                </Text>
-              </View>
-              <View style={styles.listView}>
-                <FlatList
-                  data={sysMessage}
-                  renderItem={this._renderSystemMessages}
-                  keyExtractor={this._keyExtractor}
-                  showsVerticalScrollIndicator={false}
-                  ItemSeparatorComponent={this._renderSeparator}
-                  ListFooterComponent={this._renderSeparator}
-                  ListHeaderComponent={this._renderHeader}
-                  />
-              </View>
-            </View>
-
-          </Swiper>
-
+          <TabViewAnimated
+            navigationState={this.state}
+            renderScene={this._renderScene}
+            renderHeader={this._renderTabHeader}
+            renderPager={this.renderPager}
+            onIndexChange={this._handleIndexChange}
+            initialLayout={initialLayout}
+              />
+          <View style={styles.backgroundImageView}>
+            <Image
+              style={styles.backgroundImage}
+              source={require('../img/iconBackground.png')}
+            />
+          </View>
 
           <Footer
             current={Actions.currentScene}
@@ -305,7 +347,7 @@ const styles = StyleSheet.create({
     height: windowHeight,
     width: windowWidth,
     overflow: 'hidden',
-    zIndex: 1,
+    zIndex: -1,
     position: 'absolute',
   },
   backgroundImage: {
@@ -333,15 +375,16 @@ const styles = StyleSheet.create({
     bottom: windowHeight * (30/1334),
   },
   listView: {
+    flex: 1,
     backgroundColor: 'transparent',
     position: 'absolute',
-    top: windowHeight * (124/1334),
+    top: 0,
     left: 0,
     right: 0,
     bottom: 0,
     alignItems: 'center',
-    height: windowHeight * (1099/1334),
-    zIndex: 3,
+    height: windowHeight * (900/1334),
+    zIndex: 100,
   },
   message: {
     height: windowHeight * (120/1334),
