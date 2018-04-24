@@ -77,28 +77,15 @@ class NewsPage extends Component {
     );
   }
 
-
-  setCurrentReadOffset = (event) => {
-    const yCoord = (event.nativeEvent.contentOffset.y);
-    if (yCoord < -(windowHeight * (170/1334))) {
-      this.setState({
-        readyToRefresh: true
-      })
-    }
-  }
-
   componentDidMount() {
     const { dispatch, user, collectionList } = this.props;
     const { listLength } = this.state;
 
     //Fetch news
-    if (listLength === 0){
+    if (listLength === 0 && user !== undefined){
       dispatch(
         fetchNews(current_page_index = this.props.newsList.length / 10, user.uid)
       );
-    }
-
-    if (user !== undefined) {
       dispatch(fetchThreadCollection(user.uid, user.token));
     }
 
@@ -110,7 +97,9 @@ class NewsPage extends Component {
   }
 
   onRefresh = () => {
+    const { dispatch, user } = this.props;
     this.setState({refreshing: true});
+    dispatch(refreshNews(user.uid));
     setTimeout(() => {
       this.setState({refreshing: false});
     }, 2000);
@@ -124,20 +113,6 @@ class NewsPage extends Component {
     }
   }
 
-  handleRelease = (event) => {
-    if (this.state.readyToRefresh) {
-      const { dispatch, user } = this.props;
-      this.refs.NewsList.scrollToOffset({offset: -(windowHeight * (170/1334))});
-      this.setState({ refreshing: true }, () => {
-        dispatch(refreshNews(user.uid))
-      })
-      setTimeout(() => {
-        this.refs.NewsList.scrollToOffset({offset: 0});
-        this.setState({ refreshing: false })
-      }, 3000)
-    }
-    return this.setState({ readyToRefresh: false });
-  }
 
   _keyExtractor = (item, index) => index.toString();
 
@@ -147,11 +122,10 @@ class NewsPage extends Component {
       return (
         <View
           style={{backgroundColor: 'white',
-                  paddingBottom: 20,
-                  paddingTop: 20}}
+                  paddingBottom: 20}}
             >
           <Swiper
-            width={Dimensions.get('window').width * (61/75)}
+            width={Dimensions.get('window').width}
             height={150}
             loop={true}
             autoplay={true}
@@ -162,36 +136,17 @@ class NewsPage extends Component {
             activeDot={<View style={styles.swiperActiveDot} />}
             dot={<View style={styles.swiperDot} />}
           >
-              {
-                item.map((swiperObj, index) => {
-                  return (
-                    swiperObj.hasImage ?
-                    <View
-                      style={{
-                        width:Dimensions.get('window').width * (61/75),
-                        height:150,
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      key={index}
-                        >
-                      <Image style={styles.newsPoster} source={{uri:swiperObj.image}} />
-                    </View>
-                    :
-                    <View
-                    style={{
-                      width:Dimensions.get('window').width * (61/75),
-                      height:150,
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    key={index}>
-                      <Text style={{fontSize: 40}}>{swiperObj.text}</Text>
-                    </View>
+          <View
+            style={{
+              width:Dimensions.get('window').width,
+              height:150,
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
 
-                  )
-                })
-              }
+              >
+            <Image style={styles.newsPoster} source={{uri:'https://media.giphy.com/media/5bQtihx7wT5QI/giphy.gif'}} />
+          </View>
           </Swiper>
         </View>
       )
@@ -199,14 +154,20 @@ class NewsPage extends Component {
       const { tidList } = this.props;
       const inCollection = tidList && tidList.includes(item.tid);
       return (
-        <NewsCard
-          newsObj={item}
-          isLoggedIn={loggedIn}
-          addAction={this.addToCollection}
-          deleteAction={this.deleteFromCollection}
-          isInCollection={inCollection}
-          isTransparent={false}
-          />
+        <View
+        style={{
+          width:Dimensions.get('window').width,
+          alignItems: 'center',
+        }}>
+          <NewsCard
+            newsObj={item}
+            isLoggedIn={loggedIn}
+            addAction={this.addToCollection}
+            deleteAction={this.deleteFromCollection}
+            isInCollection={inCollection}
+            isTransparent={false}
+            />
+        </View>
       );
     }
     return null;
@@ -225,15 +186,12 @@ class NewsPage extends Component {
       {
         imageUrl:'https://media.giphy.com/media/5bQtihx7wT5QI/giphy.gif',
         hasImage: true,
-        text: '欢迎！'
       },
       {
-        text:' 大家来！',
         hasImage: true,
         imageUrl:'https://i2.wp.com/marunews.com/wp-content/uploads/2016/12/%E7%9F%B3%E5%8E%9F%E3%81%95%E3%81%A8%E3%81%BF_%E3%83%98%E3%82%A2%E3%82%A2%E3%83%AC%E3%83%B3%E3%82%B8.jpg',
       },
       {
-        text: '技术部！',
         hasImage: true,
         imageUrl:'http://i.imgur.com/EmoheJJ.jpg',
       },
@@ -255,20 +213,6 @@ class NewsPage extends Component {
             source={require('../img/topBarImage.png')}
               />
         </View>
-        <View style={styles.refreshView}>
-        {
-          refreshing ?
-          <Image
-          style={styles.refreshImg}
-          source={require('../img/refreshing.gif')}
-          />
-          :
-          <Image
-          style={styles.refreshImg}
-          source={require('../img/pull.gif')}
-          />
-        }
-        </View>
         <View style={styles.listView}>
         { (!user || tidList) &&
             <FlatList
@@ -278,12 +222,11 @@ class NewsPage extends Component {
               showsVerticalScrollIndicator={false}
               onEndReachedThreshold={0.2}
               onEndReached={this.handleListEndReach}
-              onResponderRelease={this.handleRelease}
-              onScroll={this.setCurrentReadOffset}
               scrollEventThrottle={60}
               ref='NewsList'
               refreshing ={this.state.refreshing}
               extraData={this.props.tidList}
+              onRefresh={this.onRefresh}
             />
           }
         </View>
@@ -346,24 +289,10 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     alignItems: 'center',
-    height: Dimensions.get('window').height * (840/1334),
-    marginBottom: Dimensions.get('window').height * (24/1334),
+    height: windowHeight * (840/1334),
+    width: windowWidth,
+    marginBottom: windowHeight * (24/1334),
     zIndex: 3,
-  },
-  refreshView: {
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: windowHeight * (124/1334),
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: 'center',
-    zIndex: 3,
-  },
-  refreshImg: {
-    height: windowHeight * (150/1334),
-    width: windowHeight * (150/1334),
-    marginTop: windowHeight * (30/1334)
   },
   newsBottomView: {
     backgroundColor: 'transparent',
@@ -415,7 +344,7 @@ const styles = StyleSheet.create({
   },
   newsPoster: {
         height: 150,
-        width: 150,
+        width: windowWidth,
         position: 'relative',
   },
   swiperDot: {

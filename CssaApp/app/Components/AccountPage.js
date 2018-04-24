@@ -104,7 +104,6 @@ class AccountPage extends Component {
       gender = '';
     }
 
-
     return (
       <View style={styles.pageView}>
         <StatusBarAlert

@@ -39,7 +39,10 @@ export const fetchLogin = (user, pass) => dispatch => {
       success = (json) => {
         dispatch(endFetching());
         dispatch(receiveLogin(json.datas))
-        Actions.newsPage();
+
+        setTimeout(() => {
+          Actions.newsPage();
+        }, 2000)
       },
       fail = (json) => {
         dispatch(endFetching());
@@ -108,8 +111,9 @@ export const userAuth = (uid, token) => dispatch => {
         endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`,
         success = (json) => {
           dispatch(receiveLogin(json.datas));
-          dispatch(clearLoginError());
-          Actions.newsPage();
+          setTimeout(() => {
+            Actions.newsPage();
+          }, 500)
         },
         fail = (json) => {
           dispatch(invalidateUser);
