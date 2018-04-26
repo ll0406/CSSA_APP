@@ -13,8 +13,6 @@ import {
  import { connect } from 'react-redux';
  import {Col, Row, Grid} from 'react-native-easy-grid';
 
- import Footer from './Footer';
-
  import {
    fetchFriendsList,
 } from '../actions/friendActions';
@@ -84,7 +82,7 @@ class FriendsPage extends Component {
     );
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
 
   render() {
@@ -119,8 +117,6 @@ class FriendsPage extends Component {
             ListFooterComponent={this._renderSeparator}
             />
         </View>
-
-        <Footer />
       </View>
     );
 

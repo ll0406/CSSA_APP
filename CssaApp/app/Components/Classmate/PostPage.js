@@ -10,7 +10,8 @@ import {
   ScrollView,
   TextInput,
   KeyboardAvoidingView,
-  ActionSheetIOS
+  ActionSheetIOS,
+  Alert
 } from 'react-native';
 
 import { connect } from 'react-redux';
@@ -42,8 +43,7 @@ class PostPage extends Component {
   }
 
   fetchComments = () => {
-    const { postObj } = this.props;
-    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_COMMENT}?postid=${postObj.postId}&pageSize=1000`)
+    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_COMMENT}?postId=${this.props.postObj.postId}&pageSize=1000`)
       .then(res => res.text())
       .then(
         text => {
@@ -63,7 +63,7 @@ class PostPage extends Component {
         err => {
           console.log(err);
         }
-      )
+      ).catch(err => Alert.alert('网络出错'))
   }
 
   renderTopCard = () => {
@@ -220,7 +220,7 @@ class PostPage extends Component {
     )
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderListSeparator = () => {
     return (

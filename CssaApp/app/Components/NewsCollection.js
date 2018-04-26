@@ -63,7 +63,7 @@ class NewsCollection extends Component {
     }
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderItem = ({item}) => {
     const { user } = this.props

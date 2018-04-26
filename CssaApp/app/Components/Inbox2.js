@@ -34,7 +34,6 @@ const mapStateToProps = (state) => ({
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-
 const initialLayout = {
   height: 0,
   width: windowWidth,
@@ -46,6 +45,7 @@ class Inbox extends Component {
 
     this.state = {
       index: 0,
+      refreshing: false,
       routes: [
         { key: 'first', title: '个人消息'},
         { key: 'second', title: '系统消息'}
@@ -153,7 +153,7 @@ class Inbox extends Component {
     return (
           <TouchableOpacity
             style={styles.message}
-            onPress={() => Actions.confirmation({confirmMessage: item})}
+            onPress={() => Actions.confirmation({confirmMessage: item, user: user})}
             >
             <Grid>
               <Col size={14} style={{justifyContent: 'center'}}>
@@ -230,46 +230,6 @@ class Inbox extends Component {
     );
   }
 
-   renderMyMessage = () => {
-     const { messageList } = this.props;
-      return (
-        <View>
-          <View style={styles.listView}>
-            <FlatList
-              data={messageList}
-              renderItem={this._renderItem}
-              keyExtractor={this._keyExtractor}
-              showsVerticalScrollIndicator={false}
-              ItemSeparatorComponent={this._renderSeparator}
-              ListFooterComponent={this._renderSeparator}
-              ListHeaderComponent={this._renderHeader}
-              />
-          </View>
-        </View>
-      )
-  }
-
-  renderSysMessage = () => {
-    const { sysMessage } = this.props;
-    return (
-      <View>
-        <View style={styles.listView}>
-          <FlatList
-            contentContainerStyle={{ flexGrow: 1}}
-            data={sysMessage}
-            renderItem={this._renderSystemMessages}
-            keyExtractor={this._keyExtractor}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={this._renderSeparator}
-            ListFooterComponent={this._renderSeparator}
-            ListHeaderComponent={this._renderHeader}
-            />
-        </View>
-
-      </View>
-    )
-  }
-
   _handleIndexChange = index => this.setState({ index });
 
   _renderTabHeader = props => {
@@ -282,10 +242,59 @@ class Inbox extends Component {
     )
   }
 
-  _renderScene = SceneMap({
-    first: this.renderMyMessage,
-    second: this.renderSysMessage,
-  });
+  _renderScene = ({route}) => {
+    const { messageList, dispatch, user, sysMessage, isFetchingList } = this.props;
+    switch(route.key){
+      case 'first': {
+        return (
+          <View>
+            <View style={styles.listView}>
+              <FlatList
+                onRefresh={() => {
+                    dispatch(fetchMessageList(user.uid, user.token))
+                  }
+                }
+                refreshing={isFetchingList}
+                data={messageList}
+                renderItem={this._renderItem}
+                keyExtractor={this._keyExtractor}
+                showsVerticalScrollIndicator={false}
+                ItemSeparatorComponent={this._renderSeparator}
+                ListFooterComponent={this._renderSeparator}
+                ListHeaderComponent={this._renderHeader}
+                />
+            </View>
+          </View>
+        );
+        break;
+      }
+      case 'second': {
+        return (
+          <View>
+            <View style={styles.listView}>
+              <FlatList
+                onRefresh={() => {
+                    dispatch(fetchMessageList(user.uid, user.token))
+                  }
+                }
+                refreshing={isFetchingList}
+                contentContainerStyle={{ flexGrow: 1}}
+                data={sysMessage}
+                renderItem={this._renderSystemMessages}
+                keyExtractor={this._keyExtractor}
+                showsVerticalScrollIndicator={false}
+                ItemSeparatorComponent={this._renderSeparator}
+                ListFooterComponent={this._renderSeparator}
+                ListHeaderComponent={this._renderHeader}
+                />
+            </View>
+
+          </View>
+        );
+        break;
+      }
+    }
+  };
 
   renderPager = (props: any) => <TabViewPagerPan {...props} />;
 
@@ -297,6 +306,7 @@ class Inbox extends Component {
       uid = user.uid;
       token = user.token
     }
+    console.log(this.state);
       return(
         <View style={{flex: 1, backgroundColor: 'white'}}>
         <View style={styles.topBar}>

@@ -34,7 +34,7 @@ export default class MemberList extends Component {
 
   fetchMembers = () => {
     const { groupId } = this.props;
-    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_MEMBERS}?groupid=${groupId}&pageSize=1000`)
+    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_MEMBERS}?groupId=${groupId}&pageSize=1000`)
       .then(res => res.text())
       .then(
         text => {
@@ -54,7 +54,7 @@ export default class MemberList extends Component {
         err => {
           console.log(err);
         }
-      )
+      ).catch(err => Alert.alert('网络出错', err))
   }
 
   _renderItem = ({item}) => {
@@ -100,7 +100,7 @@ export default class MemberList extends Component {
     );
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
 
   render() {

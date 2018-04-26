@@ -25,7 +25,7 @@ class EditInfo extends Component {
     super(props);
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderSeparator = () => {
     return (

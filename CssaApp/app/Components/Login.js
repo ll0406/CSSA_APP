@@ -96,17 +96,14 @@ class Login extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    console.log("WILL RECIVE PROPS", nextProps);
     const { user, isFetching, dispatch, errors } = nextProps;
 
     //If user defined, then try log in with token
     if (user && !isFetching) {
       this.setState({cookieLogin: true, user: user.username, pass:'*******'});
       if (errors.length === 0) {
-        setTimeout(
-          () => dispatch(userAuth(user.uid, user.token)),
-          2000
-        )
-
+        dispatch(userAuth(user.uid, user.token));
       }
     }
   }

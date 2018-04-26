@@ -145,11 +145,7 @@ class CreateMessage extends Component {
     );
   }
 
-  _keyExtractor = (item, index) => index;
-
-  onExit = () => {
-    console.log('Exit')
-  }
+  _keyExtractor = (item, index) => index.toString();
 
   componentWillUnmount() {
     const { user, dispatch } = this.props;

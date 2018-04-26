@@ -170,7 +170,7 @@ class AccountPage extends Component {
               numberOfLines={5}
               ellipsizeMode='tail'
             >
-              { (user !== undefined) && (user.bio === '') ? '这个新来的宝宝什么也没留下 Σ(ﾟωﾟ)' : user.bio}
+              { (user === undefined) || (user.bio === '') ? '这个新来的宝宝什么也没留下 Σ(ﾟωﾟ)' : user.bio}
             </Text>
           </View>
           <View style={styles.separator}></View>

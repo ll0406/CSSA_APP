@@ -1,5 +1,5 @@
 import { RECEIVE_MESSAGELIST, RECEIVE_NEW_MESSAGE,
-  REQUEST_MESSAGELIST, REQUEST_MESSAGE, DELETE_MESSAGE,
+  REQUEST_MESSAGELIST, REQUEST_MESSAGE,
   RECEIVE_OLD_MESSAGE, CLEAR_MESSAGES, SET_NEW_NUM,
   RECEIVE_SYSMESS } from '../constants';
 import { REHYDRATE } from 'redux-persist/constants';
@@ -54,13 +54,6 @@ function messageReducer (state = initialState, action) {
     case CLEAR_MESSAGES: {
       newState.initialMessages = undefined;
       newState.oldMessages = undefined;
-      break;
-    }
-    case DELETE_MESSAGE: {
-      const plidsToDelete = payload;
-      newState.messageList = state.messageList.filter(message => {
-        return !plidsToDelete.includes(message.plid);
-      });
       break;
     }
     case SET_NEW_NUM: {

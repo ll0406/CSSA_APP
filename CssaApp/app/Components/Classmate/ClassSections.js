@@ -99,7 +99,7 @@ class ClassSections extends Component {
     );
   };
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderHeader = () => {
     return (

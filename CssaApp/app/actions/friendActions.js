@@ -4,6 +4,8 @@ import {
   REQUEST_FRIENDSLIST_FAILED,
 } from '../constants';
 import * as ENDPOINTS from "../endpoints";
+import { safe } from '../helper';
+import { apiCall } from './networkActions';
 
 export const requestFriendList = () => {
   return {
@@ -15,31 +17,28 @@ export const fetchFriendsList = (uid, token) => dispatch => {
   dispatch({
     type: REQUEST_FRIENDSLIST
   });
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_FRIENDSLIST}?uid=${uid}&token=${token}&pageSize=1000`)
-    .then(res => res.text())
-    .then(
-      text => {
-        const json = JSON.parse(text);
-        if (json.success) {
+
+  safe(
+    () => {
+      apiCall(
+        method = 'GET',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.GET_FRIENDSLIST}?uid=${uid}&token=${token}&pageSize=500`,
+        success = (json) => {
           dispatch({
             type: RECEIVE_FRIENDSLIST,
             payload: json.datas,
           });
-        } else {
-          console.log("FETCH Failed"),
+        },
+        fail = (json) => {
           dispatch({
             type: REQUEST_FRIENDSLIST_FAILED,
             error: json.error,
-          })
+          });
+          Alert.alert('获取好友失败',json.error)
         }
-      },
-      err => {
-        dispatch({
-          type: SERVER_ERROR,
-        });
-        console.error(err);
-      }
-    )
+      )
+    }
+  )
 }
 
 export const addFriendRequest = (uid, friendid, comment, token) => dispatch => {
@@ -49,32 +48,19 @@ export const addFriendRequest = (uid, friendid, comment, token) => dispatch => {
     comment,
     token,
   }
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.ADD_FRIEND_REQUEST}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success) {
-        console.log("requesting success");
-      } else {
-        console.log("requesting fail");
-      }
-    },
-    err => {
-      dispatch({
-        type: SERVER_ERROR,
-      });
-      console.err("server err");
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.ADD_FRIEND_REQUEST}`,
+        success = (json) => {},
+        fail = (json) => {
+          Alert.alert('添加好友请求失败', json.error);
+        },
+        body = JSON.stringify(data),
+      )
     }
-  )
+  );
 }
 
 export const deleteFriend = (uid, friendid, token) => {
@@ -83,30 +69,18 @@ export const deleteFriend = (uid, friendid, token) => {
     friendid,
     token,
   }
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.DELETE_FRIEND}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success) {
-        console.log("delete friend success");
-      } else {
-        console.log("delete friend fail");
-      }
-    },
-    err => {
-      dispatch({
-        type: SERVER_ERROR,
-      });
-      console.err("server err");
+
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.DELETE_FRIEND}`,
+        success = (json) => {},
+        fail = (json) => {
+          Alert.alert('删除好友失败', json.error);
+        },
+        body = JSON.stringify(data),
+      )
     }
-  )
+  );
 }

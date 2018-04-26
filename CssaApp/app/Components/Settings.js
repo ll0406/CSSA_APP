@@ -12,7 +12,6 @@ import {
 import { Actions } from 'react-native-router-flux';
 import { Col, Row, Grid } from 'react-native-easy-grid';
 
-import Footer from './Footer';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -21,7 +20,7 @@ export default class Settings extends Component {
   constructor(props) {
     super(props);
   }
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderSeparator = () => {
     return (
@@ -95,8 +94,6 @@ export default class Settings extends Component {
             ListFooterComponent={this._renderSeparator}
             />
         </View>
-
-        <Footer />
       </View>
     )
   }

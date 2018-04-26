@@ -64,7 +64,7 @@ class PersonPage extends Component {
           console.log(err);
           Alert.alert('获取用户信息失败','请稍后再试')
         }
-      )
+      ).catch(err => Alert.alert('网络出错', err))
   }
 
   renderSeparator = () => {
@@ -195,10 +195,15 @@ class PersonPage extends Component {
             }
               </View>
 
+
               <View style={styles.buttonsView}>
+              {
+                person.uid != user.uid &&
                 <TouchableOpacity style={styles.clickButtonContainer}>
                   <Text style={{fontSize: 14, color:'white', fontWeight:'bold'}}> 发送消息 </Text>
                 </TouchableOpacity>
+
+              }
               {
               person.isFriend &&
                 <TouchableOpacity style={styles.clickButtonContainer}>

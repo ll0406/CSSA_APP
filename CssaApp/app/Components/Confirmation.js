@@ -6,11 +6,12 @@ import {
   Dimensions,
   TouchableOpacity,
   Text,
+  AlertIOS
 } from 'react-native';
 
 import { Actions } from 'react-native-router-flux';
 import {Col, Row, Grid} from 'react-native-easy-grid';
-
+import { handleInvite, handleRequest } from '../actions/classmateActions';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -18,15 +19,107 @@ const windowHeight = Dimensions.get('window').height;
 export default class Confirmation extends Component {
   constructor(props) {
     super(props);
+    this.state = {
+      showOptions: true
+    }
   }
 
   componentDidMount() {
+    const { confirmMessage } = this.props
+    console.log(confirmMessage)
+    if (confirmMessage.type === '系统消息') {
+      this.setState({
+        showOptions: false,
+      })
+    }
+  }
 
+  handleConfirm = () => {
+    const { confirmMessage, user } = this.props
+    const type = this.props.confirmMessage.type;
+    switch(confirmMessage.type) {
+      case '加组请求': {
+        AlertIOS.prompt(
+          '同意理由',
+          '请输入你的处理理由',
+          [
+            {text: '取消', onPress: () => {}, style: 'cancel'},
+            {text: '发送', onPress: message =>
+            handleRequest(
+              confirmMessage.id,
+              user.uid,
+              confirmMessage.authorid,
+              confirmMessage.extra,
+              1,
+              message,
+              user.token)},
+          ],
+          'plain-text'
+        );
+        break;
+      }
+      case '好友请求': {
+        break;
+      }
+      case '加组邀请': {
+        handleInvite(
+          confirmMessage.id,
+          user.uid,
+          confirmMessage.extra,
+          1,
+          user.token
+        );
+        break;
+      }
+    }
+
+  }
+
+  handleDecline = () => {
+    const { confirmMessage, user } = this.props
+    const type = this.props.confirmMessage.type;
+    switch(confirmMessage.type) {
+      case '加组请求': {
+        AlertIOS.prompt(
+          '拒绝理由',
+          '请输入你的处理理由',
+          [
+            {text: '取消', onPress: () => {}, style: 'cancel'},
+            {text: '发送', onPress: message =>
+            handleRequest(
+              confirmMessage.id,
+              user.uid,
+              confirmMessage.authorid,
+              confirmMessage.extra,
+              0,
+              message,
+              user.token
+            )},
+          ],
+          'plain-text'
+        );
+        break;
+      }
+      case '好友请求': {
+        break;
+      }
+      case '加组邀请': {
+        handleInvite(
+          confirmMessage.id,
+          user.uid,
+          confirmMessage.extra,
+          0,
+          user.token
+        );
+        break;
+      }
+    }
   }
 
 
   render() {
-    const { confirmMessage } = this.props
+    const { confirmMessage } = this.props;
+    const { showOptions } = this.state;
     return (
       <View style={{flex:1, backgroundColor: '#cf6f6a'}}>
 
@@ -65,21 +158,23 @@ export default class Confirmation extends Component {
               {confirmMessage.content}
             </Text>
           </View>
-
-          <View style={styles.actionView}>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
-                拒绝
-              </Text>
-            </TouchableOpacity>
-            <View style={styles.buttonSeparator}>
-            </View>
-            <TouchableOpacity style={styles.actionButton}>
-              <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
-                同意
-              </Text>
-            </TouchableOpacity>
-          </View>
+          {
+            showOptions &&
+              <View style={styles.actionView}>
+                <TouchableOpacity style={styles.actionButton} onPress={this.handleDecline}>
+                  <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
+                    拒绝
+                  </Text>
+                </TouchableOpacity>
+                <View style={styles.buttonSeparator}>
+                </View>
+                <TouchableOpacity style={styles.actionButton} onPress={this.handleConfirm}>
+                  <Text style={{fontSize: 25, color: 'white', fontWeight: 'bold'}}>
+                    同意
+                  </Text>
+                </TouchableOpacity>
+              </View>
+          }
 
         </View>
 

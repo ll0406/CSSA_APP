@@ -61,8 +61,9 @@ class ClassDetail extends Component {
   }
 
   fetchGroupAndPost = () => {
+    const { user } = this.props;
     this.setState({refreshingGroup: true},
-      () => {fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_GROUP}?classCode=${this.props.classCode}&pageSize=1000`)
+      () => {fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_GROUP}?classCode=${this.props.classCode}&uid=${user.uid}&pageSize=1000`)
         .then(res => res.text())
         .then(
           text => {
@@ -88,7 +89,8 @@ class ClassDetail extends Component {
             console.log(err);
             this.setState({refreshingGroup: false})
           }
-        )}
+        ).catch(err => console.log(err));
+      }
       )
 
       this.setState({refreshingPost: true},
@@ -118,7 +120,8 @@ class ClassDetail extends Component {
               console.log(err);
               this.setState({refreshingPost: false});
             }
-          )}
+          ).catch(err => console.log(err));
+        }
       )
   }
 
@@ -127,7 +130,7 @@ class ClassDetail extends Component {
     dispatch(fetchCollection(user.uid, user.token));
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderListSeparator = () => {
     return (
@@ -139,7 +142,7 @@ class ClassDetail extends Component {
   _renderPostItem = ({item}) => {
     return (
       <TouchableOpacity
-        onPress={() => Actions.postPage({postObj:item})}
+        onPress={() => Actions.postPage({postObj:item, user: this.props.user})}
         style={styles.postItemView}>
         <Grid>
           <Col size={1.2}>

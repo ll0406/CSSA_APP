@@ -3,13 +3,13 @@ import {FETCH_LOGIN, RECEIVE_LOGIN, LOGIN_ERROR, SERVER_ERROR,
 } from '../constants';
 import * as ENDPOINTS from "../endpoints";
 import { safe } from '../helper';
-import { apiCall, startFetching, endFetching } from './networkActions'
+import { apiCall, startFetching, endFetching } from './networkActions';
 import { Actions } from 'react-native-router-flux';
 import { Alert } from 'react-native';
 
 export const requestLogin = () => {
   return {
-    type: RECEIVE_LOGIN,
+    type: FETCH_LOGIN,
   }
 }
 
@@ -30,7 +30,7 @@ export const fetchLogin = (user, pass) => dispatch => {
   formData.append('useracc', user);
   formData.append('userpw', pass);
   dispatch(startFetching());
-
+  dispatch(requestLogin());
 
   safe(() => {
     apiCall(
@@ -39,10 +39,7 @@ export const fetchLogin = (user, pass) => dispatch => {
       success = (json) => {
         dispatch(endFetching());
         dispatch(receiveLogin(json.datas))
-
-        setTimeout(() => {
-          Actions.newsPage();
-        }, 500)
+        Actions.newsPage();
       },
       fail = (json) => {
         dispatch(endFetching());
@@ -104,18 +101,21 @@ export const avatarUpdate = (base64Data, uid, token) => dispatch => {
 
 export const userAuth = (uid, token) => dispatch => {
   dispatch(requestLogin());
+  dispatch(startFetching());
   safe(
     () => {
       apiCall(
         method = 'GET',
         endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.USER_AUTH}?uid=${uid}&token=${token}`,
         success = (json) => {
+          //Timeout required to delay excessive userAuth calling
+          setTimeout(() => dispatch(endFetching()), 1000)
+          Actions.newsPage();
           dispatch(receiveLogin(json.datas));
-          setTimeout(() => {
-            Actions.newsPage();
-          }, 500)
         },
         fail = (json) => {
+          //Timeout required to delay excessive userAuth calling
+          setTimeout(() => dispatch(endFetching()), 1000)
           dispatch(invalidateUser);
           dispatch({
             type: LOGIN_ERROR,

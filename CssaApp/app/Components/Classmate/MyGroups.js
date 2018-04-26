@@ -29,7 +29,8 @@ class MyGroups extends Component {
     super(props);
     this.state = {
       text: '',
-      groups: []
+      groups: [],
+      refreshing: false,
     }
   }
 
@@ -39,27 +40,28 @@ class MyGroups extends Component {
 
   fetchGroups = () => {
     const { user } = this.props;
+    this.setState({refreshing: true})
     fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_GROUP}?uid=${user.uid}&token=${user.token}&pageSize=1000`)
       .then(res => res.text())
       .then(
         text => {
           const json = JSON.parse(text);
           if (json.success) {
-            console.log("FETCH Group Success");
             let actualPayload = json.datas;
-            console.log(actualPayload);
             if (actualPayload === null) {actualPayload = [];}
             this.setState({
+              refreshing: false,
               groups: actualPayload
             });
           } else {
+            this.setState({refreshing: false});
             console.log("FETCH Group Failed");
          }
         },
         err => {
           console.log(err);
         }
-      )
+      ).catch(err => console.log(err))
   }
 
   _renderGroupItem = ({item}) => {
@@ -94,7 +96,7 @@ class MyGroups extends Component {
     )
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderListSeparator = () => {
     return (
@@ -128,6 +130,8 @@ class MyGroups extends Component {
 
         <View style={styles.listView}>
           <FlatList
+            refreshing={this.state.refreshing}
+            onRefresh={this.fetchGroups}
             data={this.state.groups}
             renderItem={this._renderGroupItem}
             ItemSeparatorComponent={this._renderListSeparator}
@@ -192,6 +196,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     top: windowHeight * (45/1334),
     zIndex: 3,
+    height: windowHeight * (1114/1334),
     width: windowWidth,
     alignItems: 'center',
   }

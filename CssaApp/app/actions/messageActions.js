@@ -1,5 +1,5 @@
 import { RECEIVE_MESSAGELIST, RECEIVE_NEW_MESSAGE,
-  REQUEST_MESSAGELIST, REQUEST_MESSAGE, DELETE_MESSAGE,
+  REQUEST_MESSAGELIST, REQUEST_MESSAGE,
   RECEIVE_OLD_MESSAGE, SET_NEW_NUM, RECEIVE_SYSMESS } from '../constants';
 import * as ENDPOINTS from '../endpoints';
 import { Actions } from 'react-native-router-flux';
@@ -56,6 +56,7 @@ export const fetchMessageList = (uid, token) => dispatch => {
               message => {
                 return (
                   {
+                    id: message.id,
                     is_new: message.is_new,
                     category: message.category,
                     type: message.type,
@@ -66,6 +67,7 @@ export const fetchMessageList = (uid, token) => dispatch => {
                     from_id: message.from_id,
                     from_type: message.from_type,
                     delstatus: message.delstatus,
+                    extra: message.extra,
                   }
                 )
               }
@@ -80,6 +82,7 @@ export const fetchMessageList = (uid, token) => dispatch => {
           }
         )
       });
+
 }
 
 export const fetchMessage = (uid, plid, daterange, type, page, pageSize, token, fetchType) => dispatch => {
@@ -129,17 +132,13 @@ export const requestDeleteMessage = (uid, plids, types, token) => dispatch => {
     types: types.join(),
     token
   }
-
   safe(
     () => {
       apiCall(
         method = 'POST',
-        endpoint = endpoint,
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.DELETE_MESSAGE}`,
         success = (json) => {
-          dispatch({
-            type: DELETE_MESSAGE,
-            payload: plids,
-          });
+          dispatch(fetchMessageList(uid, token));
         },
         fail = (json) => {
           Alert.alert("删除失败", json.error)
@@ -200,30 +199,19 @@ export const replyMessage = (uid, username, plid, message, token) => dispatch =>
     message,
     token
   }
-  console.log(message);
-  fetch(`${ENDPOINTS.BASE}${ENDPOINTS.REPLY}`, {
-    method: 'POST',
-    mode: 'cors',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'text/html'
-    },
-    body: JSON.stringify(data)
-  })
-  .then(res => res.text())
-  .then(
-    text => {
-      const json = JSON.parse(text);
-      if (json.success) {
-        console.log("replying success");
-      } else {
-        console.log("replying fail");
-      }
-    },
-    err => {
-      console.err("server err");
-    }
-  )
+
+  safe(
+    () => {
+      apiCall(
+        method = 'POST',
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.REPLY}`,
+        success = (json) => {},
+        fail = (json) => {
+          Alert.alert("回复失败", json.error)
+        },
+        body = JSON.stringify(data),
+      )
+    });
 }
 
 export const createMessage = (uid, username, touids, subject, message, token) => {
@@ -240,7 +228,7 @@ export const createMessage = (uid, username, touids, subject, message, token) =>
     () => {
       apiCall(
         method = 'POST',
-        endpoint = endpoint,
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.CREATE_MESSAGE}`,
         success = (json) => {
           Actions.pop();
         },
@@ -264,7 +252,7 @@ export const setMessageRead = (uid, plids, types ,token) => dispatch => {
     () => {
       apiCall(
         method = 'POST',
-        endpoint = endpoint,
+        endpoint = `${ENDPOINTS.BASE}${ENDPOINTS.SET_READ}`,
         success = (json) => {
         },
         fail = (json) => {

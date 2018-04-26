@@ -142,7 +142,7 @@ class InviteGroup extends Component {
     );
   }
 
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   render() {
     const { user, friendsList, isFetchingList, dispatch } = this.props;

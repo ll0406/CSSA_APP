@@ -10,7 +10,7 @@ import logger from 'redux-logger';
 const store = createStore(
   appReducer,
   compose(
-    applyMiddleware(thunk , logger),
+    applyMiddleware(thunk, logger),
     autoRehydrate()
   )
 );

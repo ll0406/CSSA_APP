@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Text,
   ScrollView,
-  AlertIOS
+  AlertIOS,
+  Alert
 } from 'react-native';
 
 import { connect } from 'react-redux';
@@ -18,7 +19,7 @@ import { Icon } from 'react-native-elements'
 
 
 import * as ENDPOINTS from "../../endpoints";
-import { requestJoinGroup } from '../../actions/classmateActions';
+import { requestJoinGroup, leaveGroup } from '../../actions/classmateActions';
 
 
 const mapStateToProps = (state) => ({
@@ -42,7 +43,7 @@ class GroupPage extends Component {
   fetchMembers = () => {
     const { groupObj } = this.props;
     console.log(groupObj);
-    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_MEMBERS}?groupid=${groupObj.groupId}&pageSize=10`)
+    fetch(`${ENDPOINTS.BASE}${ENDPOINTS.GET_MEMBERS}?groupId=${groupObj.groupId}&pageSize=10`)
       .then(res => res.text())
       .then(
         text => {
@@ -62,7 +63,7 @@ class GroupPage extends Component {
         err => {
           console.log(err);
         }
-      )
+      ).catch(error => Alert.alert('网络连接失败'))
   }
 
   _renderListSeparator = () => {
@@ -115,6 +116,23 @@ class GroupPage extends Component {
         </Grid>
       </View>
     )
+  }
+
+  //handle 进入群聊
+  handleChatClick = () => {
+    const { groupObj } = this.props;
+    Actions.messagePage({
+      plid: groupObj.plid,
+      pmType: 2,
+      pmSubject: `${groupObj.groupName}的群聊`,
+      pmNum: 0,
+      toUsername: undefined});
+  }
+
+  handleLeaveGroup = () => {
+    const { groupObj, user } = this.props;
+    leaveGroup(user.uid, groupObj.groupId, user.token)
+    Actions.pop();
   }
 
 
@@ -219,29 +237,39 @@ class GroupPage extends Component {
           </View>
           {this._renderListSeparator()}
           <View style={{height: 30, width: 1}} />
-          <TouchableOpacity
-            onPress={() => {
-              AlertIOS.prompt(
-                '入群请求',
-                '请输入你的入群请求信息',
-                [
-                  {text: '取消', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
-                  {text: '发送', onPress: message => requestJoinGroup(user.uid, groupObj.groupId, 'Hello' ,user.token)},
-                ],
-                'plain-text'
-              );
-            }}
-            style={styles.button}>
-            <Text style={styles.buttonText}>申请加入</Text>
-          </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>开始群聊</Text>
-          </TouchableOpacity>
+          {
+            !groupObj.isInGroup &&
+              <TouchableOpacity
+                onPress={() => {
+                  AlertIOS.prompt(
+                    '入群请求',
+                    '请输入你的入群请求信息',
+                    [
+                      {text: '取消', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+                      {text: '发送', onPress: message => requestJoinGroup(user.uid, groupObj.groupId, message ,user.token)},
+                    ],
+                    'plain-text'
+                  );
+                }}
+                style={styles.button}>
+                <Text style={styles.buttonText}>申请加入</Text>
+              </TouchableOpacity>
+          }
 
-          { user.uid == groupObj.creatorId && <TouchableOpacity onPress={() => {Actions.inviteGroup({groupId: groupObj.groupId})}} style={styles.button}>
-            <Text style={styles.buttonText}>邀请加入</Text>
-          </TouchableOpacity>}
+          { groupObj.isInGroup &&
+          <View>
+            <TouchableOpacity style={styles.button} onPress={this.handleChatClick}>
+              <Text style={styles.buttonText}>开始群聊</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => {Actions.inviteGroup({groupId: groupObj.groupId})}} style={styles.button}>
+              <Text style={styles.buttonText}>邀请加入</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={this.handleLeaveGroup} style={styles.button}>
+              <Text style={styles.buttonText}>离开小组</Text>
+            </TouchableOpacity>
+          </View>
+          }
 
         </View>
 

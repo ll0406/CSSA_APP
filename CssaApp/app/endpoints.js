@@ -50,3 +50,7 @@ export const GET_POST = '/classmate/post/getPost.php';
 export const MAKE_COMMENT = '/classmate/post/makeComment.php';
 export const DEL_COMMENT = '/classmate/post/deleteComment.php';
 export const GET_MEMBERS = '/classmate/group/member.php';
+export const HANDLE_INVITE = '/classmate/group/handleInvite.php';
+export const HANDLE_REQUEST = '/classmate/group/handleRequest.php';
+export const EDIT_ROLE = '/classmate/group/editRole.php';
+export const LEAVE_GROUP = '/classmate/group/leave.php';

@@ -13,7 +13,6 @@ import { Actions } from 'react-native-router-flux';
 import { Col, Row, Grid } from 'react-native-easy-grid';
 import { Jiro } from 'react-native-textinput-effects';
 
-import Footer from './Footer';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -31,7 +30,7 @@ export default class PwdReset extends Component {
       repeat: '',
     }
   }
-  _keyExtractor = (item, index) => index;
+  _keyExtractor = (item, index) => index.toString();
 
   _renderItem = ({item}) => {
     const { user } = this.props;
@@ -126,8 +125,6 @@ export default class PwdReset extends Component {
             showsVerticalScrollIndicator={false}
             />
         </View>
-
-        <Footer />
       </View>
     )
   }

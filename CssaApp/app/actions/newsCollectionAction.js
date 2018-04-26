@@ -16,10 +16,7 @@ export const fetchThreadCollection = (uid, token) => dispatch => {
   .then(res => res.text())
   .then(
     text => {
-      console.log("COLLECTION RES")
-      console.log(text);
       const json = JSON.parse(text);
-      console.log(json.datas)
       if (json.success) {
         dispatch({
           type: RECEIVE_COLLECTION,

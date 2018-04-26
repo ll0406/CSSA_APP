@@ -53,7 +53,7 @@ export const apiCall = (
           err => {
             console.log(err)
           }
-        )
+        ).catch(error => console.log(error) );
     } else if (method == "POST") {
       fetch(endpoint, {
         method,
@@ -72,6 +72,6 @@ export const apiCall = (
         err => {
           console.log(err)
         }
-      )
+      ).catch(error => console.log(error) );
     }
 }
